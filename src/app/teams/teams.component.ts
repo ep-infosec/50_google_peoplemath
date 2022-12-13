@@ -1,0 +1,108 @@
+// Copyright 2019-2022 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import { Component, OnInit } from '@angular/core';
+import { Team, ImmutableTeam, TeamList } from '../team';
+import { StorageService } from '../storage.service';
+import { MatDialog } from '@angular/material/dialog';
+import {
+  EditTeamDialogComponent,
+  EditTeamDialogData,
+} from '../edit-team-dialog/edit-team-dialog.component';
+import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { NotificationService } from '../services/notification.service';
+import { PageTitleService } from '../services/pagetitle.service';
+
+@Component({
+  selector: 'app-teams',
+  templateUrl: './teams.component.html',
+  styleUrls: ['./teams.component.css'],
+})
+export class TeamsComponent implements OnInit {
+  teams?: readonly ImmutableTeam[];
+  addTeamDisabled = false;
+
+  constructor(
+    private storage: StorageService,
+    private dialog: MatDialog,
+    private notification: NotificationService,
+    private pageTitle: PageTitleService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadData();
+    this.pageTitle.setPageTitle('Teams');
+  }
+
+  loadData(): void {
+    this.storage
+      .getTeams()
+      .pipe(
+        catchError((error) => {
+          this.notification.error$.next(
+            'Could not load teams: ' + JSON.stringify(error)
+          );
+          console.log(error);
+          return of(new TeamList([], false));
+        })
+      )
+      .subscribe((teamList?: TeamList) => {
+        if (teamList?.teams) {
+          this.teams = teamList.teams.map((t) => new ImmutableTeam(t));
+        } else {
+          this.teams = undefined;
+        }
+        this.addTeamDisabled = !teamList?.canAddTeam;
+      });
+  }
+
+  isLoaded(): boolean {
+    return this.teams !== undefined;
+  }
+
+  addTeam(): void {
+    const dialogData: EditTeamDialogData = {
+      team: new Team('', ''),
+      title: 'Add Team',
+      okAction: 'Add',
+      allowCancel: true,
+      allowEditID: true,
+    };
+    const dialogRef = this.dialog.open(EditTeamDialogComponent, {
+      data: dialogData,
+    });
+    dialogRef.afterClosed().subscribe((team) => {
+      if (!team) {
+        return;
+      }
+      this.storage
+        .addTeam(team)
+        .pipe(
+          catchError((error) => {
+            this.notification.error$.next(
+              'Could not save new team: ' + JSON.stringify(error)
+            );
+            console.log(error);
+            return of('error');
+          })
+        )
+        .subscribe((res) => {
+          if (res !== 'error') {
+            this.teams = this.teams!.concat(new ImmutableTeam(team));
+          }
+        });
+    });
+  }
+}

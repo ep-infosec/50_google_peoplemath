@@ -1,0 +1,10 @@
+table {
+  width: 100%;
+}
+tr.mat-footer-row {
+  font-weight: bold;
+}
+.table-container {
+  max-height: 50vh;
+  overflow: auto;
+}

@@ -1,0 +1,57 @@
+.objective-name {
+  font-weight: normal;
+}
+.resource-estimate {
+  font-style: italic;
+}
+.icons {
+  margin-left: 10px;
+}
+.notes-icon {
+  vertical-align: middle;
+  font-size: 16px;
+}
+.assignments {
+  margin-left: 10px;
+  font-weight: bold;
+}
+.unassigned {
+  color: grey;
+}
+.fully-allocated {
+  color: green;
+}
+.assign-button {
+  font-weight: bold;
+}
+.assign-button-enabled a {
+  color: #674ab7;
+  text-decoration: none;
+}
+.assign-button-enabled a:hover {
+  text-decoration: underline;
+}
+.assign-button-disabled {
+  color: grey;
+}
+.resource-csum {
+  flex-grow: 1;
+  text-align: right;
+  font-weight: bold;
+}
+.objective {
+  flex-grow: 9;
+}
+.objective-all {
+  display: flex;
+  justify-content: space-between;
+}
+.resource-csum-ok {
+  color: darkgrey;
+}
+.resource-csum-marginal {
+  color: gold;
+}
+.resource-csum-excess {
+  color: tomato;
+}
